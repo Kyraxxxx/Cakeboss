@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CakeBoss Casa do bolo - Atendimento</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="logo.png">
+
+    <!-- Outfit Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase SDKs (Compatibility Mode) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <!-- SECURITY SHIELD (CSP) -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+
+    <style>
+        :root {
+            --ocean-blue: #FF208E; /* Mudado para Rosa CakeBoss */
+            --black: #000000;
+            --white: #ffffff;
+            --glass-white: rgba(255, 255, 255, 0.95);
+        }
+
+        /* MAINTENANCE SCREEN */
+        #maintenance-screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--black);
+            color: var(--white);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 10000;
+            padding: 2rem;
+        }
+
+        #maintenance-screen h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--ocean-blue);
+            font-weight: 900;
+        }
+
+        .hammer-animate { 
+            animation: strike 0.8s infinite; 
+            transform-origin: bottom left;
+            margin-bottom: 2rem;
+            width: 64px;
+            height: 64px;
+            color: var(--ocean-blue);
+        }
+
+        @keyframes strike {
+            0% { transform: rotate(0deg); }
+            15% { transform: rotate(-35deg); }
+            25% { transform: rotate(45deg); }
+            35% { transform: rotate(0deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        
+        body {
+            background-color: var(--black);
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ROBUST BACKGROUND IMAGE LAYER */
+        .bg-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background-color: var(--black);
+        }
+
+        .bg-layer img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+            filter: blur(8px); /* Blur effect */
+            transform: scale(1.1); /* Avoid white edges */
+        }
+
+        /* LOGO BOLA */
+        .brand-logo {
+            width: 110px;
+            height: 110px;
+            background: transparent;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 40px rgba(255, 32, 142, 0.5);
+            border: 3px solid var(--ocean-blue);
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .brand-logo:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 60px rgba(255, 32, 142, 0.7);
+        }
+
+        .brand-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Use cover if it's a square logo with black bg */
+        }
+
+        .page-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%);
+            z-index: -1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .link-btn {
+            background-color: var(--glass-white);
+            width: 100%;
+            padding: 16px;
+            border-radius: 15px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        .link-btn:hover {
+            transform: translateY(-5px);
+            background-color: var(--white);
+            border-color: var(--ocean-blue);
+        }
+
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        
+        .icon-box img { width: 100%; height: 100%; object-fit: contain; }
+
+        .btn-text {
+            color: var(--black);
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex: 1;
+            text-align: center;
+            padding-right: 48px;
+        }
+        
+        .link-btn:hover .btn-text { color: var(--ocean-blue); }
+
+        .social-row {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .social-btn {
+            flex: 1;
+            background: var(--white);
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .social-btn span {
+            color: var(--black);
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .social-btn img { width: 22px; height: 22px; }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+            background: var(--ocean-blue);
+        }
+
+        .social-btn:hover span { color: var(--white); }
+
+        .footer { margin-top: 2rem; text-align: center; }
+        .footer p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.6rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+    </style>
+</head>
+<body>
+    <!-- TELA DE MANUTENÇÃO -->
+    <div id="maintenance-screen">
+        <i data-lucide="hammer" class="hammer-animate"></i>
+        <h1>Site em Manutenção</h1>
+        <p>Aguarde enquanto o site volta para o Público.<br>CakeBoss agradece!</p>
+    </div>
+
+    <!-- LAYER DE FUNDO COM DIAGNÓSTICO -->
+    <div class="bg-layer">
+        <img src="fundo.png" id="main-background" alt="Fundo">
+    </div>
+    <div class="page-overlay"></div>
+
+    <div class="container">
+        
+        <!-- LOGO CIRCULAR -->
+        <div class="brand-logo">
+            <img src="logo.png">
+        </div>
+
+        <a href="https://wa.me/5573988299531?text=Olá!%20Gostaria%20de%20fazer%20um%20orçamento." class="link-btn" target="_blank">
+            <div class="icon-box">
+                <img src="orcamento.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/5968/5968841.png'">
+            </div>
+            <p class="btn-text">Encomendar Bolos</p>
+        </a>
+
+        <a href="https://wa.me/5573988299531?text=Olá!%20Gostaria%20de%20pedir%20produtos%20personalizados." class="link-btn" target="_blank">
+            <div class="icon-box">
+                <img src="custom.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1162/1162984.png'">
+            </div>
+            <p class="btn-text">Bolos personalizados</p>
+        </a>
+
+        <div class="social-row">
+            <a href="https://www.instagram.com/cakeboss221/" class="social-btn" target="_blank">
+                <img src="insta.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/174/174855.png'">
+                <span>Instagram</span>
+            </a>
+            <a href="https://wa.me/5573988299531" class="social-btn" target="_blank">
+                <img src="whats.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/733/733585.png'">
+                <span>WhatsApp</span>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2026 <b>CAKEBOSS CASA DO BOLO</b> &bull; TODOS OS DIREITOS RESERVADOS</p>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO FIREBASE
+        const firebaseConfig = {
+            databaseURL: "https://almoxarifado-dacbe-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // LISTENER DE MANUTENÇÃO
+        const maintenanceRef = database.ref('settings/maintenanceAtendimento');
+        maintenanceRef.on('value', (snapshot) => {
+            const isMaintenance = snapshot.val();
+            const screen = document.getElementById('maintenance-screen');
+            if (isMaintenance) {
+                screen.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            } else {
+                screen.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // ÍCONES LUCIDE
+        lucide.createIcons();
+
+        // SCRIPT DE DIAGNÓSTICO
+        const bgImg = document.getElementById('main-background');
+        bgImg.onerror = function() {
+            console.error("ERRO: fundo.png não pôde ser carregado.");
+            document.body.style.backgroundColor = "#2C1810"; 
+        };
+        bgImg.onload = function() {
+            document.body.style.backgroundColor = "black";
+        };
+
+        // --- ANTIGRAVITY SECURITY SHIELD ---
+        // 1. Bloquear Clique Direito
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // 2. Bloquear Teclas de Inspeção (F12, Ctrl+U, Ctrl+Shift+I, etc)
+        document.onkeydown = function(e) {
+            if (e.keyCode == 123 || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83 || (e.shiftKey && (e.keyCode == 73 || e.keyCode == 74))))) {
+                return false;
+            }
+        };
+
+        // 3. ARMADILHA DE DEBUGGER (LOOP ANTI-HACKER)
+        setInterval(function() {
+            const before = new Date().getTime();
+            debugger;
+            const after = new Date().getTime();
+            if (after - before > 100) {
+                document.body.innerHTML = "<div style='height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:black; color:#FF208E; text-align:center; padding:20px; font-family:sans-serif;'><h1>⚠️ ACESSO NEGADO ⚠️</h1><p>Violação de Segurança Detectada.</p></div>";
+                window.location.reload();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
