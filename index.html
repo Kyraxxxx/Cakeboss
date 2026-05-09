@@ -267,7 +267,7 @@
         
         <!-- LOGO CIRCULAR -->
         <div class="brand-logo">
-            <img src="logo.png" alt="CakeBoss">
+            <img src="./logo.png" alt="CakeBoss">
         </div>
 
         <a href="https://wa.me/5573988299531?text=Olá!%20Gostaria%20de%20encomendar%20um%20bolo%20na%20CakeBoss." class="link-btn" target="_blank">
@@ -325,17 +325,7 @@
         // ÍCONES LUCIDE
         lucide.createIcons();
 
-        // SCRIPT DE DIAGNÓSTICO E FORÇAR RECARREGAMENTO
-        window.onload = function() {
-            const images = document.querySelectorAll('img');
-            images.forEach(img => {
-                const currentSrc = img.getAttribute('src');
-                if (currentSrc && !currentSrc.startsWith('http')) {
-                    img.src = currentSrc + '?v=' + new Date().getTime();
-                }
-            });
-        };
-
+        // SCRIPT DE DIAGNÓSTICO
         const bgImg = document.getElementById('main-background');
         bgImg.onerror = function() {
             console.error("ERRO: fundo.png não pôde ser carregado.");
